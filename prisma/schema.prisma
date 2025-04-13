@@ -1,0 +1,464 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+ 
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
+}
+
+enum Status {
+  activo
+  inactivo
+} 
+enum StatusPeriodo {
+  vigente
+  no_vigente
+}
+enum StatusCodigoProyecto {
+  activo
+  inactivo
+} 
+
+model Role {
+  id            String          @id @default(cuid())
+  name          String             
+  status        Status          @default(activo)        
+
+  users         User[]
+  accessRoles   AccessRole[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Menu {
+  id            String          @id @default(cuid())
+  name          String  
+  url           String?
+  icon          String?
+  idMenu        String?
+
+  accessRoles   AccessRole[]
+
+  status        Status          @default(activo)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AccessRole {
+  id            String          @id @default(cuid())
+
+  role          Role?           @relation(fields: [idRole], references: [id])
+  idRole        String?
+
+  menu          Menu?           @relation(fields: [idMenu], references: [id])
+  idMenu        String?
+
+  access        Boolean         @default(false) 
+  add           Boolean         @default(false)     
+
+  status        Status          @default(activo)    
+    
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String
+  email         String          @unique
+  password      String
+  emailVerified DateTime?
+  phone         String 
+  genero        String? 
+  image         String?
+  status        Status          @default(activo)        
+
+  role            Role?         @relation(fields: [idRole], references: [id])
+  idRole          String?
+
+  subgerencia     Subgerencia?  @relation(fields: [idSubgerencia], references: [id])
+  idSubgerencia   String? 
+
+  solicitudes     Solicitud[] 
+  proyectos       UserProyecto[]  // Relación muchos a muchos con proyectos       
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Gerencia {
+  id            String          @id @default(cuid())
+  nombre        String          @unique
+  siglas        String          
+  titular       String          
+
+  organization     Organization?        @relation(fields: [idOrganization], references: [id])
+  idOrganization   String?
+
+  subgerencias      Subgerencia[] 
+  proyectos         Proyecto[]  
+
+  status        Status          @default(activo)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt  
+}
+
+model Subgerencia {
+  id            String          @id @default(cuid())
+  nombre        String          @unique
+  siglas        String          
+  titular       String 
+
+  gerencia      Gerencia?        @relation(fields: [idGerencia], references: [id])
+  idGerencia    String?         
+
+  users         User[]
+
+  status        Status          @default(activo)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt  
+}
+
+model VerificationToken {
+  identifier String             @unique
+  token      String
+  expires    DateTime
+  
+  @@id([identifier])
+}
+
+model Organization {
+  id            String          @id @default(cuid())
+  name          String
+  email         String          @unique
+  address       String?  
+  logo          String?  
+  status        Status          @default(activo)  
+  
+  gerencias         Gerencia[]
+  periodos          Periodo[]    
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt  
+}
+
+model Proceso {
+  id            String          @id @default(cuid())  
+  name          String?
+  siglas        String?  
+
+  presupuesto   Presupuesto?    @relation(fields: [idPresupuesto], references: [id])
+  idPresupuesto String?
+
+  proyectos     Proyecto[]
+
+  status        Status          @default(activo)  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+} 
+
+model TipoProyecto {
+  id            String          @id @default(cuid())
+  value         String
+  name          String
+  status        Status          @default(activo)
+
+  prospectos    Prospecto[]
+  proyectos     Proyecto[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Prospecto {
+  id            String          @id @default(cuid())
+  nombre        String 
+  acronimo      String 
+  status        Status          @default(activo)  
+
+  tipoProyecto      TipoProyecto?        @relation(fields: [idTipoProyecto], references: [id])
+  idTipoProyecto    String?
+  
+  solicitudes   Solicitud[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+} 
+
+model EstadoProyecto {
+  id            String          @id @default(cuid())
+  value         String
+  name          String
+  status        Status          @default(activo)
+
+  proyectos     Proyecto[]     
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Periodo {
+  id            String          @id @default(cuid())
+  periodo       String          @unique
+  descripcion   String?          
+  nombre        String?
+  uit           String?
+  statusPeriodo StatusPeriodo         @default(vigente)
+
+  organization       Organization?    @relation(fields: [idOrganization], references: [id])
+  idOrganization     String?
+  
+  presupuestos  Presupuesto[]     
+
+  status        Status          @default(activo)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt  
+}
+
+model Presupuesto {
+  id            String          @id @default(cuid())
+  nombre        String?
+  
+  periodo       Periodo?    @relation(fields: [idPeriodo], references: [id])
+  idPeriodo     String?
+
+  tipoPresupuesto       TipoPresupuesto?    @relation(fields: [idTipoPresupuesto], references: [id])
+  idTipoPresupuesto     String?  
+
+  procesos      Proceso[] 
+  proyectos     Proyecto[] 
+  status        Status          @default(activo)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TipoPresupuesto {
+  id            String          @id @default(cuid())
+  value         String
+  name          String
+
+  presupuestos  Presupuesto[]
+
+  status        Status          @default(activo)  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+} 
+
+model Proyecto {
+  id            String          @id @default(cuid())
+  gerencia      Gerencia?        @relation(fields: [idGerencia], references: [id])
+  idGerencia    String?
+
+  nombre        String?          @db.Text // Cambiado para soportar textos largos 
+  acronimo      String?         
+  correlativo   Int?
+  codigo        String?
+  anulado       Boolean? 
+  sustento      String?
+
+  tipoProyecto      TipoProyecto?        @relation(fields: [idTipoProyecto], references: [id])
+  idTipoProyecto    String?    
+
+  presupuesto       Presupuesto?        @relation(fields: [idPresupuesto], references: [id])
+  idPresupuesto     String? 
+
+  proceso           Proceso?        @relation(fields: [idProceso], references: [id])
+  idProceso         String?
+  
+  estadoProyecto    EstadoProyecto? @relation(fields: [idEstadoProyecto], references: [id])
+  idEstadoProyecto  String? 
+
+  users             UserProyecto[]   // Relación muchos a muchos con usuarios  
+
+  statusCodigo      StatusCodigoProyecto          @default(activo) 
+  status            Status                        @default(activo) 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+} 
+
+model UserProyecto {
+  id          String   @id @default(cuid())
+  cargo       String
+
+  user        User     @relation(fields: [idUser], references: [id])
+  idUser      String
+
+  proyecto    Proyecto @relation(fields: [idProyecto], references: [id])
+  idProyecto  String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([idUser, idProyecto]) // Un usuario no puede estar dos veces en el mismo proyecto
+}
+
+model EstadoSolicitud {
+  id            String          @id @default(cuid())
+  value         String
+  name          String
+  status        Status          @default(activo)
+
+  solicitudes   Solicitud[]     
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TipoRequerimiento {
+  id            String          @id @default(cuid())
+  value         String
+  name          String
+  status        Status          @default(activo)
+
+  solicitudes   Solicitud[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TipoAlcance {
+  id            String          @id @default(cuid())
+  value         String
+  name          String
+  status        Status          @default(activo)
+
+  solicitudes   Solicitud[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Solicitud {
+  id                  String          @id @default(cuid())
+  correlativo         String?
+  nombre              String?
+  
+  noexiste            Boolean? 
+  siglas              String?
+  nombrePropuesto     String?   
+
+  objetivo            String?
+  resumen             String?
+  prospecto           Prospecto?       @relation(fields: [idProspecto], references: [id])
+  idProspecto         String?
+  user                User?            @relation(fields: [idUser], references: [id])
+  idUser              String?
+ 
+  fechaSolicitud      DateTime?
+  liderUsuario        String?
+  patrocinador        String?
+  tipoRequerimiento       TipoRequerimiento?       @relation(fields: [idTipoRequerimiento], references: [id])
+  idTipoRequerimiento     String?
+
+  alcance             String?
+  tipoAlcance         TipoAlcance?       @relation(fields: [idTipoAlcance], references: [id])
+  idTipoAlcance       String?
+
+  objetivoGeneral     String?
+  objetivos           Objetivo[]
+
+  niveles             Nivel[]
+  hitos               Hito[]
+
+  beneficio               String?
+  beneficioCuantitativo   String?
+  beneficioCualitativo    String?  
+
+  resultados           Resultado[]
+  terminos             String?
+  directivas           String?
+
+  status              Status                 @default(activo)    
+  estadoSolicitud     EstadoSolicitud?       @relation(fields: [idEstadoSolicitud], references: [id])
+  idEstadoSolicitud   String? 
+
+  dimensiones         Dimension[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Objetivo {
+  id            String          @id @default(cuid())
+  objetivo      String    
+
+  solicitud     Solicitud?       @relation(fields: [idSolicitud], references: [id])
+  idSolicitud   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Nivel {
+  id            String          @id @default(cuid())
+  nivel         String    
+
+  solicitud     Solicitud?       @relation(fields: [idSolicitud], references: [id])
+  idSolicitud   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Hito {
+  id            String          @id @default(cuid())
+  hito          String    
+  fecha         DateTime
+
+  solicitud     Solicitud?       @relation(fields: [idSolicitud], references: [id])
+  idSolicitud   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Resultado {
+  id            String          @id @default(cuid())
+  nombre        String    
+  descripcion   String    
+
+  solicitud     Solicitud?       @relation(fields: [idSolicitud], references: [id])
+  idSolicitud   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Dimension {
+  id            String          @id @default(cuid())
+  
+  tipoDimension     TipoDimension?       @relation(fields: [idTipoDimension], references: [id])
+  idTipoDimension   String?
+
+  tarea         String 
+  requerimiento String   
+
+  solicitud     Solicitud?       @relation(fields: [idSolicitud], references: [id])
+  idSolicitud   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TipoDimension {
+  id            String          @id @default(cuid())
+  value         String
+  name          String
+  semanas       Int
+  status        Status          @default(activo)
+
+  dimensiones   Dimension[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
