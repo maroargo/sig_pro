@@ -84,7 +84,9 @@ model User {
   idSubgerencia   String? 
 
   solicitudes     Solicitud[] 
-  proyectos       UserProyecto[]  // Relación muchos a muchos con proyectos       
+  proyectos       UserProyecto[]  // Relación muchos a muchos con proyectos  
+  actividades     Actividad[]     
+  tareas          Tarea[] 
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -279,6 +281,7 @@ model Proyecto {
   idEstadoProyecto  String? 
 
   users             UserProyecto[]   // Relación muchos a muchos con usuarios  
+  fases             Fase[]
 
   statusCodigo      StatusCodigoProyecto          @default(activo) 
   status            Status                        @default(activo) 
@@ -458,6 +461,101 @@ model TipoDimension {
   status        Status          @default(activo)
 
   dimensiones   Dimension[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/*ACTIVIDADES*/
+model Etapa {
+  id            String          @id @default(cuid())
+  value         String
+  name          String
+  status        Status          @default(activo)
+
+  actividades   Actividad[]     
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EstadoActividad {
+  id            String          @id @default(cuid())
+  value         String
+  name          String
+  status        Status          @default(activo)
+
+  actividades   Actividad[]     
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EstadoTarea {
+  id            String          @id @default(cuid())
+  value         String
+  name          String
+  status        Status          @default(activo)
+
+  tareas        Tarea[]     
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Fase {
+  id          String       @id @default(cuid())
+  nombre      String
+
+  proyecto    Proyecto?    @relation(fields: [idProyecto], references: [id])
+  idProyecto  String?
+
+  actividades Actividad[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Actividad {
+  id          String       @id @default(cuid())
+  nombre      String
+
+  fase        Fase?     @relation(fields: [idFase], references: [id])
+  idFase      String?
+
+  user        User?     @relation(fields: [idUser], references: [id])
+  idUser      String?
+
+  etapa       Etapa?     @relation(fields: [idEtapa], references: [id])
+  idEtapa     String?
+
+  fechaInicio DateTime?
+  fechaFin DateTime?
+
+  estadoActividad       EstadoActividad?     @relation(fields: [idEstadoActividad], references: [id])
+  idEstadoActividad     String?
+
+  tareas      Tarea[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tarea {
+  id           String       @id @default(cuid())
+  nombre       String
+
+  actividad    Actividad?   @relation(fields: [idActividad], references: [id])
+  idActividad  String?
+
+  user        User?     @relation(fields: [idUser], references: [id])
+  idUser      String?
+
+  fechaInicio DateTime?
+  fechaFin DateTime?
+
+  estadoTarea           EstadoTarea?     @relation(fields: [idEstadoTarea], references: [id])
+  idEstadoTarea     String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -250,6 +250,37 @@ export const dimensionSchema = object({
   idSolicitud: string().optional(),  
 });
 
+export const faseSchema = object({
+  nombre: string({ required_error: "Nombre es requerido" })
+    .min(1, "Nombre es requerido"),
+  idProyecto: string({ required_error: "Proyecto es requerido" })
+    .min(1, "Proyecto es requerido"),       
+});
+
+export const actividadSchema = object({
+  nombre: string({ required_error: "Nombre es requerido" })
+    .min(1, "Nombre es requerido"),
+  idFase: string({ required_error: "Fase es requerido" })
+    .min(1, "Fase es requerido"),    
+  idUser: string({ required_error: "Responsable es requerido" })
+    .min(1, "Responsable es requerido"),
+  idEtapa: string().optional(), 
+  fechaInicio: date().nullable(),
+  fechaFin: date().nullable(),
+  idEstadoActividad: string().optional(),  
+});
+
+export const tareaSchema = object({
+  nombre: string({ required_error: "Nombre es requerido" })
+    .min(1, "Nombre es requerido"),
+  idActividad: string().optional(),    
+  idUser: string({ required_error: "Responsable es requerido" })
+    .min(1, "Responsable es requerido"),  
+  fechaInicio: date().nullable(),
+  fechaFin: date().nullable(),
+  idEstadoTarea: string().optional(),  
+});
+
 
 export type UserSchema = z.infer<typeof userSchema>;
 export type UserUpdateSchema = z.infer<typeof userUpdateSchema>;
@@ -268,3 +299,7 @@ export type SolicitudSchema = z.infer<typeof solicitudSchema>;
 export type DimensionSchema = z.infer<typeof dimensionSchema>;
 export type ProyectoSchema = z.infer<typeof proyectoSchema>;
 export type UserProyectoSchema = z.infer<typeof userProyectoSchema>;
+
+export type FaseSchema = z.infer<typeof faseSchema>;
+export type ActividadSchema = z.infer<typeof actividadSchema>;
+export type TareaSchema = z.infer<typeof tareaSchema>;

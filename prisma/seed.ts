@@ -765,6 +765,53 @@ async function main() {
     create: { cargo: 'Coordinador', idUser: erika.id, idProyecto: SSVE.id },
   })*/
 
+  await prisma.etapa.deleteMany();  
+  await prisma.etapa.upsert({
+    where: { id: '', name: 'ANÁLISIS' },
+    update: {},
+    create: { value: '1', name: 'ANÁLISIS' },
+  })
+  await prisma.etapa.upsert({
+    where: { id: '', name: 'DESARROLLO' },
+    update: {},
+    create: { value: '2', name: 'DESARROLLO' },
+  })
+  await prisma.etapa.upsert({
+    where: { id: '', name: 'QA' },
+    update: {},
+    create: { value: '3', name: 'QA' },
+  })
+  await prisma.etapa.upsert({
+    where: { id: '', name: 'PRODUCCIÓN' },
+    update: {},
+    create: { value: '4', name: 'PRODUCCIÓN' },
+  })
+
+  await prisma.estadoActividad.deleteMany();  
+  await prisma.estadoActividad.upsert({
+    where: { id: '', name: 'Pendiente' },
+    update: {},
+    create: { value: '1', name: 'Pendiente' },
+  })
+  await prisma.estadoActividad.upsert({
+    where: { id: '', name: 'Finalizada' },
+    update: {},
+    create: { value: '2', name: 'Finalizada' },
+  })
+
+  await prisma.estadoTarea.deleteMany();  
+  await prisma.estadoTarea.upsert({
+    where: { id: '', name: 'Pendiente' },
+    update: {},
+    create: { value: '1', name: 'Pendiente' },
+  })
+  await prisma.estadoTarea.upsert({
+    where: { id: '', name: 'Finalizada' },
+    update: {},
+    create: { value: '2', name: 'Finalizada' },
+  })
+  
+
   console.log("Se ha ejecutado correctamente.")
 }
 main()
