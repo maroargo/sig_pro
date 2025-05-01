@@ -251,6 +251,7 @@ export const dimensionSchema = object({
 });
 
 export const faseSchema = object({
+  unico: boolean().optional(),
   nombre: string({ required_error: "Nombre es requerido" })
     .min(1, "Nombre es requerido"),
   idProyecto: string({ required_error: "Proyecto es requerido" })

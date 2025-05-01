@@ -5,7 +5,6 @@ datasource db {
  
 generator client {
   provider = "prisma-client-js"
-  output   = "../node_modules/@prisma/client"
 }
 
 enum Status {
@@ -505,6 +504,7 @@ model EstadoTarea {
 
 model Fase {
   id          String       @id @default(cuid())
+  unico       Boolean? 
   nombre      String
 
   proyecto    Proyecto?    @relation(fields: [idProyecto], references: [id])

@@ -294,7 +294,7 @@ export default function SolicitudForm({
                     <FormControl>
                       <DateOnlyPicker  
                         disabled={isReadOnly}
-                        value={field.value ? new Date(field.value) : ""}
+                        value={field.value ? new Date(field.value) : ""}                        
                         onChange={(date) => field.onChange(date)}
                       />
                     </FormControl>

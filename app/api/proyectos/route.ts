@@ -21,9 +21,9 @@ export async function GET() {
                 { presupuesto: { idPeriodo: periodo?.id } }
             ],
         };
-        
+                
         if (esFuncional && session?.user?.idUser) {
-            whereClause.AND.push({ user: { id: session.user.idUser } });
+            whereClause.AND.push({ users: { some: { idUser: session.user.idUser } } });
         }        
 
         const data = await db.proyecto.findMany({ 

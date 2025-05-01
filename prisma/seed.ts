@@ -45,6 +45,11 @@ async function main() {
     where: { id: '', name: 'Analista de Pruebas' },
     update: {},
     create: { name: 'Analista de Pruebas' },
+  })
+  const roleSup = await prisma.role.upsert({
+    where: { id: '', name: 'Supervisor' },
+    update: {},
+    create: { name: 'Supervisor' },
   })   
 
   await prisma.organization.deleteMany();
@@ -365,6 +370,11 @@ async function main() {
     where: { id: '', name: 'Rodolfo Martin Atuaje Seguin', email:'g.sgsi.rmas@outlook.com', password:passwordHash, phone: '' },
     update: {},
     create: { name: 'Rodolfo Martin Atuaje Seguin', email:'g.sgsi.rmas@outlook.com', genero:'M', password:passwordHash, phone: '987115677', idRole: roleFunc.id, idSubgerencia: subgerA.id },
+  })
+  const michell = await prisma.user.upsert({
+    where: { id: '', name: 'Michell Hinostroza', email:'g.sgsi.mdhp@outlook.com', password:passwordHash, phone: '' },
+    update: {},
+    create: { name: 'Michell Hinostroza', email:'g.sgsi.mdhp@outlook.com', genero:'M', password:passwordHash, phone: '900000000', idRole: roleSup.id, idSubgerencia: subgerA.id },
   })
 
   

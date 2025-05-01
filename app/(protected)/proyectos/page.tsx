@@ -10,6 +10,7 @@ import { IProyecto } from '@/interfaces/proyecto';
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import UpdateFase from '@/components/fases/update-fase';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -21,13 +22,15 @@ export default function Proyectos() {
   const { data: role } = useSWR<Role>("/api/roles/user", fetcher);
   const isAdmin = role ? role.name == "Administrador" : false; 
   const isCoordinador = role ? role.name == "Coordinador" : false;   
+  const isFuncional = role ? role.name == "Analista Funcional" : false; 
 
   const {
     data: proyectos,
     error,
     isLoading,
   } = useSWR<IProyecto[]>("/api/proyectos", fetcher);   
-  const proyectoList = proyectos || [];   
+  
+  const proyectoList = Array.isArray(proyectos) ? proyectos : [];
 
   if (isLoading)
     return (
@@ -150,7 +153,8 @@ export default function Proyectos() {
                 <span className="text-sm font-semibold text-gray-700">{proyecto.codigo}</span>
                 
                 {/* Botones */}
-                <div className="flex space-x-2">                  
+                <div className="flex space-x-2">   
+                  {isFuncional && <UpdateFase proyecto={proyecto} />}                
                   {isCoordinador && <UpdateProyecto proyecto={proyecto} />} 
                   {isAdmin && <DeleteProyecto id={proyecto.id} />}                
                 </div>
