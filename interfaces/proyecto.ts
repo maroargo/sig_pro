@@ -1,4 +1,4 @@
-import { EstadoProyecto, Gerencia, Presupuesto, Proceso, Proyecto, TipoProyecto, User, UserProyecto } from "@prisma/client"
+import { EstadoProyecto, Fase, Gerencia, Presupuesto, Proceso, Proyecto, TipoProyecto, User, UserProyecto } from "@prisma/client"
 
 export interface IProyecto {
     id: string
@@ -24,6 +24,7 @@ export interface IProyecto {
     estadoProyecto: EstadoProyecto
 
     users: IUserProyecto[]
+    fases: Fase[]
 
     status: string 
 }

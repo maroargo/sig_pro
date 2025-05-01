@@ -1,6 +1,5 @@
 import { db } from "@/lib/db";
 import { faseSchema } from '@/lib/zod';
-import { Fase, Status } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
@@ -15,30 +14,6 @@ export async function GET() {
         });                  
         
         return NextResponse.json(data);
-    } catch (error) {        
-        return NextResponse.json({ message: 'Ocurrió un error' }, { status: 500 });
-    }
-}
-
-export async function POST(request: NextRequest) {
-    try {
-        const body = await request.json();
-        const result = faseSchema.safeParse(body);
-
-        if (!result.success) {
-            return NextResponse.json({ message: 'Invalid input', errors: result.error.errors }, { status: 400 });
-        }
-
-        const data = result.data;
-
-        const newData = await db.fase.create({
-            data: {
-                nombre: data.nombre,                
-                idProyecto: data.idProyecto,
-            },
-        });
-
-        return NextResponse.json(newData, { status: 201 });
     } catch (error) {        
         return NextResponse.json({ message: 'Ocurrió un error' }, { status: 500 });
     }
@@ -66,36 +41,43 @@ export async function DELETE(request: NextRequest) {
     }
 }
 
-export async function PUT(request: NextRequest) {
-    try {
-        const body = await request.json();
-        const { id, ...rest } = body;
-        const result = faseSchema.safeParse(rest);
-        
-        if (!result.success) {
-            return NextResponse.json({ message: 'Invalid input', errors: result.error.errors }, { status: 400 });
-        }
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
 
-        const data = result.data as Fase;
-
-        if (!id) {
-            return NextResponse.json({ message: 'Fase ID es requerido' }, { status: 400 });
-        }
-
-        const updated = await db.fase.update({
-            where: { id },
-            data: {                                
-                nombre: data.nombre,
-                idProyecto: data.idProyecto,                
-            },
-        });
-
-        if (!updated) {
-            return NextResponse.json({ message: 'Fase no válido' }, { status: 404 });
-        }
-
-        return NextResponse.json(updated, { status: 200 });
-    } catch (error) {        
-        return NextResponse.json({ message: 'Ocurrió un error' }, { status: 500 });
+    // Validamos que venga correcto
+    const validated = faseSchema.safeParse(body);
+    if (!validated.success) {
+      return NextResponse.json({ message: 'Datos inválidos', errors: validated.error.flatten() }, { status: 400 });
     }
+
+    const { idProyecto, fases, unico } = validated.data;
+
+    if (!idProyecto) {
+      return NextResponse.json({ message: 'ID del proyecto es requerido' }, { status: 400 });
+    }
+
+    // Eliminar fases antiguas del proyecto
+    await db.fase.deleteMany({
+      where: { idProyecto },
+    });
+
+    // Si "unico" está activado, dejamos sólo la primera fase
+    const fasesToCreate = unico ? fases.slice(0, 1) : fases;
+
+    // Crear las nuevas fases
+    if (fasesToCreate.length > 0) {
+      await db.fase.createMany({
+        data: fasesToCreate.map(fase => ({
+          nombre: fase.nombre,
+          idProyecto,
+        })),
+      });
+    }
+
+    return NextResponse.json({ message: 'Fases actualizadas correctamente' }, { status: 200 });
+  } catch (error) {
+    console.error('Error actualizando fases:', error);
+    return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
+  }
 }

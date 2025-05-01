@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { mutate } from "swr";
+import useSWR from "swr";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,8 +17,9 @@ import FaseForm from "@/components/fases/fase-form";
 import { type FaseSchema } from "@/lib/zod";
 import { Pencil1Icon } from "@radix-ui/react-icons";
 import { useToast } from "@/hooks/use-toast";
-import { Status } from "@prisma/client";
 import { IProyecto } from "@/interfaces/proyecto";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function UpdateFase({ proyecto }: { proyecto: IProyecto }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,6 +28,12 @@ export default function UpdateFase({ proyecto }: { proyecto: IProyecto }) {
     const [isDialogOpen, setDialogOpen] = useState(false);
 
     const { toast } = useToast();
+
+    const { data: fases } = useSWR(
+        `/api/fases/proyecto?idProyecto=${proyecto.id}`,
+        fetcher
+    );    
+    const faseList = fases || [];
 
     const onSubmit = async (data: FaseSchema) => {
         setIsSubmitting(true);
@@ -46,7 +54,8 @@ export default function UpdateFase({ proyecto }: { proyecto: IProyecto }) {
 
             setErrorMessage("");
             setDialogOpen(false);
-            mutate("/api/fases");
+            mutate(`/api/fases/proyecto?idProyecto=${proyecto.id}`);
+            mutate("/api/proyectos");
 
             toast({
               title: "Éxito",
@@ -74,7 +83,7 @@ export default function UpdateFase({ proyecto }: { proyecto: IProyecto }) {
                     <Pencil1Icon className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[925px] overflow-auto bg-white">
+            <DialogContent className="sm:max-w-[725px] overflow-auto bg-white">
                 <DialogHeader>
                     <DialogTitle>Fases del Proyecto</DialogTitle>
                 </DialogHeader>
@@ -84,13 +93,14 @@ export default function UpdateFase({ proyecto }: { proyecto: IProyecto }) {
                     </div>
                 )}
                 <FaseForm
-                    defaultValues={{   
-                        idProyecto: proyecto.id || "",                     
-                        nombre: proyecto.nombre || "",
-                        unico: false
-                    }}
+                    defaultValues={{
+                        idProyecto: proyecto.id || "",
+                        nombreProyecto: proyecto.nombre || "",
+                        unico: faseList.length === 1, // Si hay solo 1 fase, marcar "único"
+                        fases: faseList.map((fase: any) => ({ nombre: fase.nombre })) // Adaptar estructura
+                      }}
                     onSubmit={onSubmit}
-                    submitButtonText="Registrar"
+                    submitButtonText="Actualizar"
                     isSubmitting={isSubmitting}
                     isUpdating={isUpdating}
                 />

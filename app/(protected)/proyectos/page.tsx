@@ -128,6 +128,7 @@ export default function Proyectos() {
                   <p><span className="font-semibold">Acrónimo:</span> {proyecto.acronimo}</p>
                   <p><span className="font-semibold">Proceso Electoral:</span> <span className="text-blue-600 font-bold">{proyecto.proceso?.siglas}</span></p>
                   <p><span className="font-semibold">Tipo:</span> {proyecto.tipoProyecto?.name}</p>
+                  <p><span className="font-semibold">Fases:</span> {proyecto.fases?.length}</p>
                   <p><span className="font-semibold">Estado:</span> {proyecto.status}</p>
                 </div>
                 

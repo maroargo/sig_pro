@@ -1,5 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/library";
-import { z, object, string, number, date, boolean } from "zod";
+import { z, object, string, date, boolean } from "zod";
  
 export const signInSchema = object({
   id: string().optional(),
@@ -251,11 +250,15 @@ export const dimensionSchema = object({
 });
 
 export const faseSchema = object({
-  unico: boolean().optional(),
-  nombre: string({ required_error: "Nombre es requerido" })
-    .min(1, "Nombre es requerido"),
   idProyecto: string({ required_error: "Proyecto es requerido" })
-    .min(1, "Proyecto es requerido"),       
+    .min(1, "Proyecto es requerido"),
+  nombreProyecto: string().optional(),
+  unico: boolean().optional(),
+  fases: z.array(
+    object({
+      nombre: string({ required_error: "Nombre de fase es requerido" }).min(1)
+    })
+  ).nonempty({ message: "Debe haber al menos una fase" })
 });
 
 export const actividadSchema = object({
