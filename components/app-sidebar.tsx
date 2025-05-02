@@ -5,6 +5,7 @@ import { NavMain } from "./nav-main"
 
 import {    
   Activity,
+  Calendar,
   CalendarCog,
   Dock,
   FolderDot,
@@ -87,6 +88,12 @@ export function AppSidebar({
         icon: FolderDot,
         isActive: true,
         url: "/proyectos",      
+      },
+      {
+        title: "Programación",      
+        icon: Calendar,
+        isActive: true,
+        url: "/cronogramas",      
       },
       {
         title: "Actividades",      

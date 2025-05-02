@@ -820,6 +820,40 @@ async function main() {
     update: {},
     create: { value: '2', name: 'Finalizada' },
   })
+
+  await prisma.estadoCronograma.deleteMany();  
+  await prisma.estadoCronograma.upsert({
+    where: { id: '', name: 'Por Realizar' },
+    update: {},
+    create: { value: '1', name: 'Por Realizar' },
+  })
+  await prisma.estadoCronograma.upsert({
+    where: { id: '', name: 'Realizado' },
+    update: {},
+    create: { value: '2', name: 'Realizado' },
+  })
+
+  await prisma.subetapa.deleteMany();  
+  await prisma.subetapa.upsert({
+    where: { id: '', name: 'INDUCCIÓN' },
+    update: {},
+    create: { value: '1', name: 'INDUCCIÓN' },
+  })
+  await prisma.subetapa.upsert({
+    where: { id: '', name: 'AEGP' },
+    update: {},
+    create: { value: '2', name: 'AEGP' },
+  })
+  await prisma.subetapa.upsert({
+    where: { id: '', name: 'PASCC' },
+    update: {},
+    create: { value: '3', name: 'PASCC' },
+  })
+  await prisma.subetapa.upsert({
+    where: { id: '', name: 'PASPRO' },
+    update: {},
+    create: { value: '4', name: 'PASPRO' },
+  })
   
 
   console.log("Se ha ejecutado correctamente.")

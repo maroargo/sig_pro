@@ -285,6 +285,19 @@ export const tareaSchema = object({
   idEstadoTarea: string().optional(),  
 });
 
+export const cronogramaSchema = object({
+  tarea: string({ required_error: "Tarea es requerido" })
+    .min(1, "Tarea es requerido"),
+  fecha: date().nullable(),
+  idFase: string({ required_error: "Proyecto es requerido" })
+    .min(1, "Proyecto es requerido"),    
+  idEtapa: string({ required_error: "Etapa es requerido" })
+    .min(1, "Etapa es requerido"),  
+  idSubetapa: string({ required_error: "Sub Etapa es requerido" })
+    .min(1, "Sub Etapa es requerido"),
+  idEstadoCronograma: string().optional(),   
+});
+
 
 export type UserSchema = z.infer<typeof userSchema>;
 export type UserUpdateSchema = z.infer<typeof userUpdateSchema>;
@@ -307,3 +320,5 @@ export type UserProyectoSchema = z.infer<typeof userProyectoSchema>;
 export type FaseSchema = z.infer<typeof faseSchema>;
 export type ActividadSchema = z.infer<typeof actividadSchema>;
 export type TareaSchema = z.infer<typeof tareaSchema>;
+
+export type CronogramaSchema = z.infer<typeof cronogramaSchema>;

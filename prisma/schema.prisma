@@ -472,7 +472,8 @@ model Etapa {
   name          String
   status        Status          @default(activo)
 
-  actividades   Actividad[]     
+  actividades   Actividad[]   
+  cronogramas   Cronograma[]  
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -511,6 +512,7 @@ model Fase {
   idProyecto  String?
 
   actividades Actividad[]
+  cronogramas Cronograma[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -556,6 +558,53 @@ model Tarea {
 
   estadoTarea           EstadoTarea?     @relation(fields: [idEstadoTarea], references: [id])
   idEstadoTarea     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/*CRONOGRAMA*/
+model Subetapa {
+  id            String          @id @default(cuid())
+  value         String
+  name          String
+  status        Status          @default(activo)
+
+  cronogramas   Cronograma[]      
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Cronograma {
+  id            String          @id @default(cuid())
+  
+  tarea         String
+  fecha         DateTime?
+
+  fase          Fase?       @relation(fields: [idFase], references: [id])
+  idFase        String?  
+
+  etapa         Etapa?       @relation(fields: [idEtapa], references: [id])
+  idEtapa       String?
+
+  subetapa      Subetapa?       @relation(fields: [idSubetapa], references: [id])
+  idSubetapa    String? 
+
+  estadoCronograma      EstadoCronograma?       @relation(fields: [idEstadoCronograma], references: [id])
+  idEstadoCronograma    String? 
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EstadoCronograma {
+  id            String          @id @default(cuid())
+  value         String
+  name          String
+  status        Status          @default(activo)
+
+  cronogramas   Cronograma[]     
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
