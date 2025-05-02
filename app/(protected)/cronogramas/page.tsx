@@ -12,6 +12,7 @@ import { es } from "date-fns/locale";
 import UpdateCronograma from '@/components/cronogramas/update-cronograma';
 import DeleteCronograma from '@/components/cronogramas/delete-cronograma';
 import CreateCronograma from '@/components/cronogramas/create-cronograma';
+import AutocompleteCronograma from '@/components/cronogramas/autocomplete-cronograma';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -51,7 +52,12 @@ export default function Cronogramaes() {
         <div className="flex justify-between items-center mb-5">
           <h1 className="text-xl font-medium">Programaciones</h1>
 
-          <CreateCronograma />   
+            
+
+          <div className="ml-auto flex gap-2">
+            <CreateCronograma /> 
+            <AutocompleteCronograma />
+          </div>
         </div>
 
         <div className="flex justify-between items-center ">
