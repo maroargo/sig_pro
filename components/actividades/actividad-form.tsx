@@ -56,7 +56,7 @@ export default function ActividadForm({
   const { data: etapas } = useSWR<Etapa[]>("/api/etapas", fetcher);
   const etapaList = etapas || [];
 
-  const { data: users } = useSWR<IUser[]>("/api/users/active", fetcher);
+  const { data: users } = useSWR<IUser[]>("/api/users/any", fetcher);
   const userList = users || [];        
 
   return (

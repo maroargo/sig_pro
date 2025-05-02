@@ -21,7 +21,8 @@ export default function Actividades() {
   const { data: role } = useSWR<Role>("/api/roles/user", fetcher);
 
   const isAdmin = role ? role.name === "Administrador" : false;
-  const isAnalista = role ? role.name === "Analista Funcional" : false; 
+  const isCoordinador = role ? role.name === "Coordinador" : false; 
+  const isFuncional = role ? role.name === "Analista Funcional" : false; 
 
   if (isLoading)
     return (
@@ -45,7 +46,7 @@ export default function Actividades() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Actividades</h1>
 
-        {isAnalista && (
+        {(isCoordinador || isFuncional) && (
           <CreateActividad />                      
         )}         
       </div>
@@ -113,10 +114,10 @@ export default function Actividades() {
                 </div>
 
                 <div className="flex gap-2 mt-4">
-                  {isAnalista && (
+                  {(isCoordinador || isFuncional) && (
                     <UpdateActividad actividad={actividad} />                   
                   )} 
-                  {isAnalista && (
+                  {(isCoordinador || isFuncional) && (
                     <DeleteActividad id={actividad.id} />                   
                   )}                                    
                 </div>

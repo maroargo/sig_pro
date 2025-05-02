@@ -5,12 +5,20 @@ import { auth } from "@/auth";
 export async function GET() {
     try { 
         const session = await auth(); 
+        
+        const esFuncional = session?.user.role?.name == "Analista Funcional";
+
+        const whereClause: any = {
+            AND: [],
+        };
+
+        if (esFuncional && session?.user?.idUser) {
+            whereClause.AND.push({ idUser: session?.user?.idUser });
+        }
 
         // Traer todos los proyectos del usuario
         const userProyectos = await db.userProyecto.findMany({              
-            where: {
-                idUser: session?.user.id,
-            },                                
+            where: whereClause,                                
             orderBy: {
                 createdAt: 'asc',
             },

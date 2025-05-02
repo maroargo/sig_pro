@@ -3,36 +3,55 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from "@/auth";
 
 export async function GET() {
-    try {  
-        const session = await auth();
-        const esFuncional = session?.user.role?.name == "Analista Funcional";
+  try {  
+    const session = await auth();
 
-        const whereClause: any = {
-            AND: [],
-        };
+    const esCoordinador = session?.user.role?.name === "Coordinador";
+    const esSupervisor = session?.user.role?.name === "Supervisor";
+    const esFuncional = session?.user.role?.name === "Analista Funcional";    
 
-        if (esFuncional && session?.user?.idUser) {
-            whereClause.AND.push({ idUser: session?.user?.idUser });
-        }
+    let whereClause: any = {};
 
-        const data = await db.actividad.findMany({ 
-            include: {
-                user: true,
-                fase: true,
-                etapa: true,
-                estadoActividad: true,
-            }, 
-            where: whereClause,          
-            orderBy: {
-                createdAt: 'asc',
+    if (esFuncional) {          
+        whereClause = {
+            fase: {
+                proyecto: {
+                    users: {
+                        some: {
+                            idUser: session?.user?.idUser, 
+                        },
+                    },
+                },
             },
-        });                  
-        
-        return NextResponse.json(data);
-    } catch (error) { 
-        console.log(error);       
-        return NextResponse.json({ message: 'Ocurrió un error' }, { status: 500 });
-    }
+        };
+    } else if (!esCoordinador && !esSupervisor) {     
+        whereClause = {
+            idUser: session?.user?.idUser,
+        };
+    }    
+
+    const data = await db.actividad.findMany({ 
+      include: {
+        user: true,
+        fase: {
+          include: {
+            proyecto: true,
+          },
+        },
+        etapa: true,
+        estadoActividad: true,
+      }, 
+      where: whereClause,          
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    return NextResponse.json(data);
+  } catch (error) { 
+    console.error(error);       
+    return NextResponse.json({ message: 'Ocurrió un error' }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {

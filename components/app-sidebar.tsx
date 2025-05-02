@@ -154,6 +154,32 @@ export function AppSidebar({
         url: "/proyectos",      
       }
     ],    
+    navMainSupervisor: [
+      {
+        title: "Dashboard",      
+        icon: House,
+        isActive: true,
+        url: "/home",      
+      },
+      {
+        title: "Proyectos",      
+        icon: FolderDot,
+        isActive: true,
+        url: "/proyectos",      
+      },
+      {
+        title: "Programación",      
+        icon: Calendar,
+        isActive: true,
+        url: "/cronogramas",      
+      },
+      {
+        title: "Actividades",      
+        icon: Activity,
+        isActive: true,
+        url: "/actividades",      
+      }
+    ],    
     navMainUser: [
       {
         title: "Dashboard",      
@@ -172,9 +198,10 @@ export function AppSidebar({
     
   const navItems = role.name === "Administrador" ? menus.navMainAdmin 
     : (role.name === "Comité de Gobierno y Transformación Digital" ? menus.navMainComite 
-      : (role.name === "Coordinador" ? menus.navMainCoord 
+      : (role.name === "Coordinador" ? menus.navMainCoord         
         : (role.name === "Usuario" ? menus.navMainUser 
-          : (role.name === "Analista Funcional" ? menus.navMainAnalista : menus.navMainDefault))));
+          : (role.name === "Analista Funcional" ? menus.navMainAnalista 
+            : (role.name === "Supervisor" ? menus.navMainSupervisor : menus.navMainDefault)))));
    
   return (
     <Sidebar collapsible="icon">
