@@ -5,8 +5,8 @@ import { FaCalendarAlt } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 
 interface DateOnlyPickerProps {
-  value: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  value: Date;
+  onChange: (date: Date | null) => void;
   className?: string;
   disabled?: boolean;
   id?: string;
@@ -19,40 +19,30 @@ const DateOnlyPicker: React.FC<DateOnlyPickerProps> = ({
   disabled = false,
   id = "",
 }) => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(
-    value ? new Date(value) : null // Ensure the state starts as null or the provided value
-  );
-  const [pickerPosition, setPickerPosition] = useState<"date" | "time" | null>(null);
-
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const datePickerRef = useRef<DatePicker>(null);
 
-  // Only update selectedDate if the value prop changes (i.e., initial render or when form value changes)
+  // Update the selected date when value changes (initial render or prop change)
   useEffect(() => {
-    if (value && value !== selectedDate) {
+    if (value && new Date(value).getTime() !== selectedDate?.getTime()) {
       setSelectedDate(new Date(value));
     }
-  }, [value]); // Dependency on value prop to prevent infinite loop
+  }, [value]); // Runs when 'value' prop changes
 
-  // Handle date selection
+  // Handle date change
   const handleDateChange = (date: Date | null) => {
     setSelectedDate(date);
-    if (onChange) {
-      onChange(date);
-    }
-    setPickerPosition(null); // Close picker after selection
+    onChange(date);  // Notify parent component of the change
   };
 
-  // Open the DatePicker in date mode
+  // Open date picker when the calendar icon is clicked
   const handleDateIconClick = () => {
-    setPickerPosition("date");
-    setTimeout(() => {
-      datePickerRef.current?.setOpen(true);
-    }, 0);
-  };  
+    datePickerRef.current?.setOpen(true);
+  };
 
   // Handle input change (disable typing)
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault(); // Prevent typing
+  const handleInputChange = (event?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
+    event?.preventDefault(); // Prevent typing
   };
 
   return (
@@ -60,26 +50,24 @@ const DateOnlyPicker: React.FC<DateOnlyPickerProps> = ({
       <DatePicker
         id={id}
         selected={selectedDate}
-        value={value ? value : ""} // Use value instead of defaultValue
-        onChange={handleDateChange}        
-        dateFormat="dd/MM/yyyy" // Always show both date and time in input
+        onChange={handleDateChange}
+        dateFormat="dd/MM/yyyy"
         disabled={disabled}
         className={cn(
           "w-full h-10 rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50",
           className
         )}
-        popperPlacement={pickerPosition === "date" ? "bottom-start" : "bottom-end"}
         ref={datePickerRef}
-        onChangeRaw={handleInputChange} // Disable typing
+        onChangeRaw={handleInputChange} // Prevent manual input
+        popperPlacement="bottom-start"  // Placement of the datepicker
       />
       {/* Calendar Icon */}
       <FaCalendarAlt
         className="text-black-400 hover:text-blue-500 cursor-pointer"
         onClick={handleDateIconClick}
-      />      
+      />
     </div>
   );
 };
-
 
 export { DateOnlyPicker };

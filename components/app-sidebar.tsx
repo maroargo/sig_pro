@@ -4,6 +4,7 @@ import * as React from "react"
 import { NavMain } from "./nav-main"
 
 import {    
+  Activity,
   CalendarCog,
   Dock,
   FolderDot,
@@ -86,6 +87,12 @@ export function AppSidebar({
         icon: FolderDot,
         isActive: true,
         url: "/proyectos",      
+      },
+      {
+        title: "Actividades",      
+        icon: Activity,
+        isActive: true,
+        url: "/actividades",      
       }
     ],    
     navMainComite: [
