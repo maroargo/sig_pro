@@ -1,137 +1,129 @@
 "use client";
 
-import React, {useState} from 'react';
+import React, { useState } from "react";
 import { format } from "date-fns";
-
-import { Role } from '@prisma/client';
-import useSWR from "swr";
-
-import { ICronograma } from '@/interfaces/cronograma';
-
 import { es } from "date-fns/locale";
-import UpdateCronograma from '@/components/cronogramas/update-cronograma';
-import DeleteCronograma from '@/components/cronogramas/delete-cronograma';
-import CreateCronograma from '@/components/cronogramas/create-cronograma';
-import AutocompleteCronograma from '@/components/cronogramas/autocomplete-cronograma';
+
+import useSWR from "swr";
+import { Role } from "@prisma/client";
+
+import { ICronograma } from "@/interfaces/cronograma";
+import UpdateCronograma from "@/components/cronogramas/update-cronograma";
+import DeleteCronograma from "@/components/cronogramas/delete-cronograma";
+import CreateCronograma from "@/components/cronogramas/create-cronograma";
+import AutocompleteCronograma from "@/components/cronogramas/autocomplete-cronograma";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function Cronogramaes() {
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  const {
-    data: cronogramaes,
-    error,
-    isLoading,
-  } = useSWR<ICronograma[]>("/api/cronogramas", fetcher);  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [openFaseId, setOpenFaseId] = useState<string | null>(null);
 
+  const { data: cronogramas, error, isLoading } = useSWR<ICronograma[]>("/api/cronogramas", fetcher);
   const { data: role } = useSWR<Role>("/api/roles/user", fetcher);
-  const isAdmin = role ? role.name == "Administrador" : false;
 
-  if (isLoading)
-    return (
-      <div className="flex justify-center items-center h-[600px] bg-white">
-        <div className="relative w-12 h-12">
-          <div className="absolute w-12 h-12 border-4 border-primary rounded-full animate-spin border-t-transparent"></div>
-          <div className="absolute w-12 h-12 border-4 border-primary rounded-full animate-ping opacity-25"></div>
-        </div>
-      </div>
-    );
+  const isAdmin = role ? role.name === "Administrador" : false;
 
+  if (isLoading) return <div className="flex justify-center items-center h-[600px] bg-white">Cargando...</div>;
   if (error) return <div>Ocurrió un error.</div>;
 
-  const cronogramaList = cronogramaes || [];
+  const cronogramaList = cronogramas || [];
 
-  const filteredData = cronogramaList.filter(item => 
-    item.tarea?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Agrupar cronogramas por fase
+  const fasesMap = cronogramaList.reduce((acc: any, item) => {
+    const idFase = item.fase?.id;
+    if (!idFase) return acc;
+
+    if (!acc[idFase]) {
+      acc[idFase] = {
+        nombreFase: item.fase?.nombre,
+        acronimoProyecto: item.fase?.proyecto?.acronimo,
+        procesoProyecto: item.fase?.proyecto?.proceso?.siglas,
+        cronogramas: [],
+      };
+    }
+    acc[idFase].cronogramas.push(item);
+    return acc;
+  }, {});
+
+  const fases = Object.entries(fasesMap);
+
+  const handleToggle = (faseId: string) => {
+    setOpenFaseId((prev) => (prev === faseId ? null : faseId));
+  };
 
   return (
-    <>
-      <div className="bg-white p-4 py-6 rounded-md">
-        <div className="flex justify-between items-center mb-5">
-          <h1 className="text-xl font-medium">Programaciones</h1>
-
-            
-
-          <div className="ml-auto flex gap-2">
-            <CreateCronograma /> 
-            <AutocompleteCronograma />
-          </div>
-        </div>
-
-        <div className="flex justify-between items-center ">
-          <div className="flex justify-between items-center mb-4">
-            <label className="text-sm text-gray-600">
-              <span className="pr-1">Mostrar</span>
-
-              <select className="border border-gray-300 rounded px-2 py-1">
-                <option>10</option>
-                <option>25</option>
-                <option>50</option>
-                <option>100</option>
-              </select>
-              <span className="pl-1">registros</span>
-            </label>  
-          </div>
-          
-          <input 
-            type="text" 
-            placeholder="Buscar por tarea..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="border border-colorprimario1 rounded-md  px-3 py-1"
-          />
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-auto border-collapse text-sm">
-            <thead className="bg-colorprimario1 text-white">
-              <tr>
-                <th className="px-4 py-2 text-left">Proceso</th>
-                <th className="px-4 py-2 text-left">Proyecto</th>
-                <th className="px-4 py-2 text-left">Encargado</th>
-                <th className="px-4 py-2 text-left">Etapa</th>
-                <th className="px-4 py-2 text-left">Sub Etapa</th> 
-                <th className="px-4 py-2 text-left">Tarea</th> 
-                <th className="px-4 py-2 text-left">Fecha</th>                
-                <th className="px-4 py-2 text-left">Estado</th>
-                <th className="px-4 py-2 text-left">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="text-gray-700">
-              {filteredData.length > 0 ? (
-                filteredData.map((cronograma) => (
-                  <tr
-                    key={cronograma.id}
-                    className="hover:bg-gray-50 border-b border-[#D3D3D3] "
-                  >        
-                    <td className="px-4 py-2">{cronograma.fase?.proyecto?.proceso?.siglas}</td>            
-                    <td className="px-4 py-2"><b>{cronograma.fase?.proyecto.acronimo}</b> <br/> {cronograma.fase?.nombre}</td> 
-                    <td className="px-4 py-2">{cronograma.fase?.proyecto?.users[0].user?.name}</td>  
-                    <td className="px-4 py-2">{cronograma.etapa?.name}</td>
-                    <td className="px-4 py-2">{cronograma.subetapa?.name}</td>  
-                    <td className="px-4 py-2">{cronograma.tarea}</td>                 
-                    <td className="px-4 py-2">{cronograma.fecha
-                                            ? format(new Date(cronograma.fecha), "dd/MM/yyyy", { locale: es })
-                                            : "Sin fecha"}</td>                    
-                    <td className="px-4 py-2">{cronograma.estadoCronograma?.name}</td>
-                    <td className="px-4 py-2">
-                      <UpdateCronograma cronograma={cronograma} />
-                      <DeleteCronograma id={cronograma.id} />                                              
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td className="px-4 py-2">No se encontraron registros</td>
-                </tr>
-              )}
-              
-            </tbody>
-          </table>
+    <div className="bg-white p-6 rounded-md">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold">Programaciones</h1>
+        <div className="flex gap-2">
+          <CreateCronograma />
+          <AutocompleteCronograma />
         </div>
       </div>
-    </>
+
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Buscar tarea..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full border rounded-md px-3 py-2"
+        />
+      </div>
+
+      <div className="space-y-4">
+        {fases.length > 0 ? (
+          fases.map(([faseId, faseData]: any) => (
+            <div key={faseId} className="border rounded-md shadow-sm">
+              <button
+                onClick={() => handleToggle(faseId)}
+                className="w-full text-left p-4 bg-blue-50 hover:bg-blue-100 rounded-t-md"
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="text-sm text-gray-600">{faseData.procesoProyecto}</div>
+                    <div className="font-bold text-lg">{faseData.acronimoProyecto} - {faseData.nombreFase}</div>                    
+                  </div>
+                  <div>{openFaseId === faseId ? "▲" : "▼"}</div>
+                </div>
+              </button>
+
+              {openFaseId === faseId && (
+                <div className="p-4 space-y-4 bg-gray-50 rounded-b-md">
+                  {faseData.cronogramas
+                    .filter((item: ICronograma) =>
+                      item.tarea?.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map((item: ICronograma) => (
+                      <div key={item.id} className="bg-white p-4 rounded shadow-sm flex flex-col gap-2">
+                        <div className="flex flex-col sm:flex-row sm:justify-between">
+                          <div>
+                            <div className="font-medium text-gray-700">Etapa: {item.etapa?.name || "Sin etapa"}</div>
+                            <div className="text-sm text-gray-600">Subetapa: {item.subetapa?.name || "Sin subetapa"}</div>
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {item.fecha
+                              ? format(new Date(item.fecha), "dd/MM/yyyy", { locale: es })
+                              : "Sin fecha"}
+                          </div>
+                        </div>
+                        <div className="mt-2 text-gray-800">{item.tarea}</div>
+
+                        <div className="flex gap-2 mt-2">
+                          <UpdateCronograma cronograma={item} />
+                          <DeleteCronograma id={item.id} />
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <div className="text-center text-gray-500">No se encontraron programaciones.</div>
+        )}
+      </div>
+    </div>
   );
 }
