@@ -1,39 +1,32 @@
 "use client";
 
-import React, {useState} from 'react';
-import { format } from "date-fns";
-
-import { Role } from '@prisma/client';
+import React, { useState } from "react";
+import { format, isAfter } from "date-fns";
+import { es } from "date-fns/locale";
 import useSWR from "swr";
 
-import { IActividad } from '@/interfaces/actividad';
+import { Role } from "@prisma/client";
+import { IActividad } from "@/interfaces/actividad";
 
-import { es } from "date-fns/locale";
-import UpdateActividad from '@/components/actividades/update-actividad';
-import DeleteActividad from '@/components/actividades/delete-actividad';
-import CreateActividad from '@/components/actividades/create-actividad';
+import UpdateActividad from "@/components/actividades/update-actividad";
+import DeleteActividad from "@/components/actividades/delete-actividad";
+import CreateActividad from "@/components/actividades/create-actividad";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function Actividades() {
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  const {
-    data: actividades,
-    error,
-    isLoading,
-  } = useSWR<IActividad[]>("/api/actividades", fetcher);  
+  const [searchTerm, setSearchTerm] = useState("");
 
+  const { data: actividades, error, isLoading } = useSWR<IActividad[]>("/api/actividades", fetcher);
   const { data: role } = useSWR<Role>("/api/roles/user", fetcher);
-  const isAdmin = role ? role.name == "Administrador" : false;
+
+  const isAdmin = role ? role.name === "Administrador" : false;
+  const isAnalista = role ? role.name === "Analista Funcional" : false; 
 
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-[600px] bg-white">
-        <div className="relative w-12 h-12">
-          <div className="absolute w-12 h-12 border-4 border-primary rounded-full animate-spin border-t-transparent"></div>
-          <div className="absolute w-12 h-12 border-4 border-primary rounded-full animate-ping opacity-25"></div>
-        </div>
+        <div className="animate-spin h-10 w-10 border-4 border-blue-400 border-t-transparent rounded-full"></div>
       </div>
     );
 
@@ -41,89 +34,99 @@ export default function Actividades() {
 
   const actividadList = actividades || [];
 
-  const filteredData = actividadList.filter(item => 
+  const filteredData = actividadList.filter((item) =>
     item.nombre?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const hoy = new Date();
+
   return (
-    <>
-      <div className="bg-white p-4 py-6 rounded-md">
-        <div className="flex justify-between items-center mb-5">
-          <h1 className="text-xl font-medium">Actividades</h1>
+    <div className="bg-white p-6 rounded-md">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold">Actividades</h1>
 
-          <CreateActividad />   
-        </div>
-
-        <div className="flex justify-between items-center ">
-          <div className="flex justify-between items-center mb-4">
-            <label className="text-sm text-gray-600">
-              <span className="pr-1">Mostrar</span>
-
-              <select className="border border-gray-300 rounded px-2 py-1">
-                <option>10</option>
-                <option>25</option>
-                <option>50</option>
-                <option>100</option>
-              </select>
-              <span className="pl-1">registros</span>
-            </label>  
-          </div>
-          
-          <input 
-            type="text" 
-            placeholder="Buscar por actividad..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="border border-colorprimario1 rounded-md  px-3 py-1"
-          />
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-auto border-collapse text-sm">
-            <thead className="bg-colorprimario1 text-white">
-              <tr>
-              <th className="px-4 py-2 text-left">Fase</th>
-                <th className="px-4 py-2 text-left">Nombre</th>
-                <th className="px-4 py-2 text-left">Etapa</th> 
-                <th className="px-4 py-2 text-left">Fecha Inicio</th>
-                <th className="px-4 py-2 text-left">Fecha Fin</th>
-                <th className="px-4 py-2 text-left">Estado</th>
-                <th className="px-4 py-2 text-left">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="text-gray-700">
-              {filteredData.length > 0 ? (
-                filteredData.map((actividad) => (
-                  <tr
-                    key={actividad.id}
-                    className="hover:bg-gray-50 border-b border-[#D3D3D3] "
-                  >                    
-                    <td className="px-4 py-2">{actividad.fase?.nombre}</td>   
-                    <td className="px-4 py-2">{actividad.nombre}</td>
-                    <td className="px-4 py-2">{actividad.etapa?.name}</td>                 
-                    <td className="px-4 py-2">{actividad.fechaInicio
-                                            ? format(new Date(actividad.fechaInicio), "dd/MM/yyyy", { locale: es })
-                                            : "Sin fecha"}</td>
-                    <td className="px-4 py-2">{actividad.fechaFin
-                                            ? format(new Date(actividad.fechaFin), "dd/MM/yyyy", { locale: es })
-                                            : "Sin fecha"}</td>
-                    <td className="px-4 py-2">{actividad.estadoActividad?.name}</td>
-                    <td className="px-4 py-2">
-                      <UpdateActividad actividad={actividad} />
-                      <DeleteActividad id={actividad.id} />                                              
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td className="px-4 py-2">No se encontraron registros</td>
-                </tr>
-              )}
-              
-            </tbody>
-          </table>
-        </div>
+        {isAnalista && (
+          <CreateActividad />                      
+        )}         
       </div>
-    </>
+
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Buscar actividad..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full border rounded-md px-3 py-2"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredData.length > 0 ? (
+          filteredData.map((actividad) => {
+            const fechaFin = actividad.fechaFin ? new Date(actividad.fechaFin) : null;
+            const vencida = fechaFin ? isAfter(hoy, fechaFin) : false;
+
+            const bgColor = vencida ? "bg-red-100" : "bg-green-100";
+
+            return (
+              <div key={actividad.id} className={`${bgColor} p-5 rounded-lg shadow-sm flex flex-col gap-4`}>
+                <div className="flex flex-col gap-2">
+                  <h2 className="text-lg font-bold text-gray-800">{actividad.nombre}</h2>
+
+                  <div className="text-sm text-gray-700">
+                    <span className="font-semibold">Responsable:</span> {actividad.user?.name || "Sin asignar"}
+                  </div>
+
+                  <div className="text-sm text-gray-700">
+                    <span className="font-semibold">Fase:</span> {actividad.fase?.nombre || "Sin fase"}
+                  </div>
+
+                  <div className="text-sm text-gray-700">
+                    <span className="font-semibold">Etapa:</span> {actividad.etapa?.name || "Sin etapa"}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-2 mt-3">
+                    {/* Fecha Inicio */}
+                    <div className="flex flex-col items-center bg-blue-100 text-blue-800 px-3 py-2 rounded-md shadow-sm">
+                      <span className="text-xs font-semibold uppercase">Inicio</span>
+                      <span className="text-base font-bold">
+                        {actividad.fechaInicio
+                          ? format(new Date(actividad.fechaInicio), "dd/MM/yyyy", { locale: es })
+                          : "Sin fecha"}
+                      </span>
+                    </div>
+
+                    {/* Fecha Fin */}
+                    <div className="flex flex-col items-center bg-blue-100 text-blue-800 px-3 py-2 rounded-md shadow-sm">
+                      <span className="text-xs font-semibold uppercase">Fin</span>
+                      <span className="text-base font-bold">
+                        {actividad.fechaFin
+                          ? format(new Date(actividad.fechaFin), "dd/MM/yyyy", { locale: es })
+                          : "Sin fecha"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-sm text-gray-700 mt-2">
+                    <span className="font-semibold">Estado:</span> {actividad.estadoActividad?.name || "Sin estado"}
+                  </div>
+                </div>
+
+                <div className="flex gap-2 mt-4">
+                  {isAnalista && (
+                    <UpdateActividad actividad={actividad} />                   
+                  )} 
+                  {isAnalista && (
+                    <DeleteActividad id={actividad.id} />                   
+                  )}                                    
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="text-center text-gray-500 col-span-full">No se encontraron actividades.</div>
+        )}
+      </div>
+    </div>
   );
 }

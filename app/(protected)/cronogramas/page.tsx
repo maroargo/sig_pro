@@ -23,6 +23,7 @@ export default function Cronogramaes() {
   const { data: role } = useSWR<Role>("/api/roles/user", fetcher);
 
   const isAdmin = role ? role.name === "Administrador" : false;
+  const isAnalista = role ? role.name === "Analista Funcional" : false;  
 
   if (isLoading) return <div className="flex justify-center items-center h-[600px] bg-white">Cargando...</div>;
   if (error) return <div>Ocurrió un error.</div>;
@@ -57,8 +58,12 @@ export default function Cronogramaes() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Programaciones</h1>
         <div className="flex gap-2">
-          <CreateCronograma />
-          <AutocompleteCronograma />
+          {isAnalista && (
+            <CreateCronograma />                       
+          )}
+          {isAnalista && (
+            <AutocompleteCronograma />                       
+          )}                    
         </div>
       </div>
 
@@ -111,8 +116,12 @@ export default function Cronogramaes() {
                         <div className="mt-2 text-gray-800">{item.tarea}</div>
 
                         <div className="flex gap-2 mt-2">
-                          <UpdateCronograma cronograma={item} />
-                          <DeleteCronograma id={item.id} />
+                          {isAnalista && (
+                            <UpdateCronograma cronograma={item} />                       
+                          )}
+                          {isAnalista && (
+                            <DeleteCronograma id={item.id} />                    
+                          )}                                                    
                         </div>
                       </div>
                     ))}

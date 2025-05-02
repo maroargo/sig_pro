@@ -4,20 +4,33 @@ import { auth } from "@/auth";
 
 export async function GET() {
     try {  
-        
+        const session = await auth();
+        const esFuncional = session?.user.role?.name == "Analista Funcional";
+
+        const whereClause: any = {
+            AND: [],
+        };
+
+        if (esFuncional && session?.user?.idUser) {
+            whereClause.AND.push({ idUser: session?.user?.idUser });
+        }
+
         const data = await db.actividad.findMany({ 
             include: {
+                user: true,
                 fase: true,
                 etapa: true,
                 estadoActividad: true,
-            },           
+            }, 
+            where: whereClause,          
             orderBy: {
                 createdAt: 'asc',
             },
-        });        
+        });                  
         
         return NextResponse.json(data);
-    } catch (error) {        
+    } catch (error) { 
+        console.log(error);       
         return NextResponse.json({ message: 'Ocurrió un error' }, { status: 500 });
     }
 }
